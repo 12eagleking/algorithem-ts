@@ -40,11 +40,11 @@ function printResult(objs) {
     });
     console.log("\uFF0C\u6B64\u65F6\u5305\u4E2D\u7269\u54C1\u7684\u603B\u91CD\u91CF\u662F " + totalWeght + "\uFF0C\u603B\u4EF7\u503C\u662F " + totalPrice + "\u3002");
 }
-var chooseFunc1;
+var chooseMostPrice;
 /**
  * （1）根据物品价值选择，每次都选价值最高的物品
  */
-chooseFunc1 = function (objs, c) {
+chooseMostPrice = function (objs, c) {
     var index = -1; // -1 表示背包容量已满
     var mp = 0;
     for (var i = 0; i < objs.length; i++) {
@@ -53,6 +53,37 @@ chooseFunc1 = function (objs, c) {
             index = i;
         }
     }
+    return index;
+};
+/**
+ * （2）根据物品重量选择，每次都选重量最轻的物品
+ */
+var chooseLightestFirst;
+chooseLightestFirst = function (objs, c) {
+    var index = -1;
+    var lightestWeight = 1000000000000000;
+    objs.forEach(function (obj, i) {
+        if ((obj.status === 0) && (obj.weight <= c) && (obj.weight < lightestWeight)) {
+            lightestWeight = obj.weight;
+            index = i;
+        }
+    });
+    return index;
+};
+/**
+ *  （3）定义一个价值密度概念，每次选择都选价值密度最高的物品
+ */
+var chooseTheMostPriceDestiny;
+chooseTheMostPriceDestiny = function (objs, c) {
+    var index = -1;
+    var mostPriceDestiny = 0;
+    objs.forEach(function (obj, i) {
+        var priceDestiny = obj.price / obj.weight;
+        if ((obj.status === 0) && (obj.weight <= c) && (priceDestiny > mostPriceDestiny)) {
+            mostPriceDestiny = priceDestiny;
+            index = i;
+        }
+    });
     return index;
 };
 var problem = {
@@ -95,4 +126,28 @@ var problem = {
         },
     ]
 };
-greedyAlgo(problem, chooseFunc1);
+function getProblem(totalC, weights, prices) {
+    var problem = {
+        totalC: totalC,
+        objs: []
+    };
+    weights.forEach(function (weight, index) {
+        var price = prices[index];
+        problem.objs.push({
+            weight: weight,
+            price: price,
+            status: 0
+        });
+    });
+    return problem;
+}
+var totalC = 150;
+var weights = [35, 30, 60, 50, 40, 10, 25];
+var prices = [10, 40, 30, 50, 35, 40, 30];
+console.log('--------------每次都选价值最高的物品-----------');
+// greedyAlgo(problem, chooseMostPrice);
+greedyAlgo(getProblem(totalC, weights, prices), chooseMostPrice);
+console.log('--------------每次都选重量最轻的物品------------');
+greedyAlgo(getProblem(totalC, weights, prices), chooseLightestFirst);
+console.log('--------------每次选择都选价值密度最高的物品------------');
+greedyAlgo(getProblem(totalC, weights, prices), chooseTheMostPriceDestiny);
